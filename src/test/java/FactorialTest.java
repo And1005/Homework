@@ -1,27 +1,23 @@
 import org.example.Factorial;
-import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import org.testng.annotations.Test;
+import static org.testng.Assert.assertEquals;
 
 public class FactorialTest {
+
     @Test
     public void testFactorialOfZero() {
-        assertEquals(1, Factorial.factorial(0), "Факториал 0 должен быть = 1");
+        assertEquals(Factorial.factorial(0), 1, "Факториал 0 должен быть 1");
     }
 
     @Test
     public void testFactorialOfPositiveNumber() {
-        assertEquals(1, Factorial.factorial(1), "Факториал 1 должен быть = 1");
-        assertEquals(3628800, Factorial.factorial(10), "Факториал 10 должен быть = 3628800");
+        assertEquals(Factorial.factorial(1), 1, "Факториал 1 должен быть = 1");
+        assertEquals(Factorial.factorial(10), 3628800, "Факториал 10 должен быть = 3628800");
     }
 
-    @Test
+    @Test(expectedExceptions = IllegalArgumentException.class,
+            expectedExceptionsMessageRegExp = "Факториал не может быть отрицательным")
     public void testFactorialOfNegativeNumber() {
-        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
-            Factorial.factorial(-1);
-        });
-        assertEquals("Факториал не может быть отрицательным", exception.getMessage());
+        Factorial.factorial(-1);
     }
-
 }
