@@ -1,3 +1,4 @@
+import org.example.MainPage;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -6,18 +7,16 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
-
 import java.time.Duration;
-import java.util.NoSuchElementException;
-
-import org.openqa.selenium.TimeoutException;
+import static org.junit.Assert.assertArrayEquals;
 
 
 public class MtsTest {
     private WebDriver driver;
     private WebDriverWait wait;
+    private MainPage mainPage;
+
     @Before
     public void setUp() {
         System.setProperty("webdriver.chrome.driver", "src/main/resources/chromedriver.exe");
@@ -25,61 +24,95 @@ public class MtsTest {
         wait = new WebDriverWait(driver, Duration.ofSeconds(10));
         driver.manage().window().maximize();
         driver.get("https://www.mts.by/");
-
-        try {
-            WebElement cookieCloseButton = wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("#cookie-agree")));
-            cookieCloseButton.click();
-        } catch (NoSuchElementException | TimeoutException e) {
-
-        }
+        mainPage = new MainPage(driver);
+        mainPage.closeCookie();
     }
 
-    @Test
+
+    @Test  //Проверка наименования блока "Онлайн пополнение без комиссии"
     public void testOnlineRefillBlock() {
-        WebElement refillBlock =
-                driver.findElement(By.xpath("//h2[contains(normalize-space(), \"Онлайн пополнение\") and contains(normalize-space(), \"без комиссии\")]"));
-        Assert.assertNotNull("Блок не найден", refillBlock);
+        Assert.assertNotNull("Блок не найден", mainPage.getRefillBlockName());
     }
 
-    @Test
-    public void testLogo() {
-        WebElement visaLogo = driver.findElement(By.xpath("//img[@alt=\"Visa\"]"));
-        WebElement verifiedByVisaLogo = driver.findElement(By.xpath("//img[@alt=\"Verified By Visa\"]"));
-        WebElement masterCardLogo = driver.findElement(By.xpath("//img[@alt=\"MasterCard\"]"));
-        WebElement masterCardSecureCodeLogo = driver.findElement(By.xpath("//img[@alt=\"MasterCard Secure Code\"]"));
-        WebElement belkartLogo = driver.findElement(By.xpath("//img[@alt=\"Белкарт\"]"));
-
-        Assert.assertNotNull("Логотип не найден", visaLogo);
-        Assert.assertNotNull("Логотип не найден", verifiedByVisaLogo);
-        Assert.assertNotNull("Логотип не найден", masterCardLogo);
-        Assert.assertNotNull("Логотип не найден", masterCardSecureCodeLogo);
-        Assert.assertNotNull("Логотип не найден", belkartLogo);
-    }
-
-    @Test
-    public void testMoreAboutService() {
-        WebElement detailsLink = driver.findElement(By.xpath("//a[@href=\"/help/poryadok-oplaty-i-bezopasnost-internet-platezhey/\"]"));
-        detailsLink.click();
+    @Test  //Проверка ссылки "Подробнее о сервисе"
+    public void testMoreAboutServiceLink() {
+        mainPage.clickMoreAboutServiceLink();
         WebElement serviceNameElement = driver.findElement(By.xpath("//span[@itemprop='name' and text()='Порядок оплаты и безопасность интернет платежей']"));
         Assert.assertNotNull("Страница не загрузилась", serviceNameElement);
-
     }
 
-    @Test
+    @Test  //Проверка логотипов платёжных систем
+    public void testLogo() {
+        Assert.assertTrue("Логотипы не найдены", mainPage.areLogosPresent());
+    }
+
+    @Test  //Проверка варианта "Услуги связи" + проверка суммы, номера телефона, надписей и логотипов платёжных систем
     public void testContinueButton() {
-        WebElement phoneNumber = driver.findElement(By.id("connection-phone"));
-        phoneNumber.sendKeys("297777777");
+        mainPage.enterPhoneNumber("297777777");
+        mainPage.enterSum("80");
+        mainPage.clickContinueButton();
+        mainPage.switchToIframe();
+        String[] paymentDetails = mainPage.getPaymentPageTexts();
+        String[] expectedPaymentDetails = new String[] {
+               "80.00 BYN",
+                "Оплатить 80.00 BYN",
+                "Оплата: Услуги связи Номер:375297777777",
+                "Номер карты",
+                "Срок действия",
+                "CVC",
+                "Имя держателя (как на карте)"
+        };
+        Assert.assertArrayEquals("Данные не совпадают",expectedPaymentDetails, paymentDetails);
+        Assert.assertTrue("Логотипы не найдены", mainPage.areLogosPresentOnPaymentTab());
+    }
 
-        WebElement sum = driver.findElement(By.id("connection-sum"));
-        sum.sendKeys("77");
+    @Test //Проверка плейсхолдеров для варианта "Услуги связи"
+    public void testPlaceholderTexts1() {
+        mainPage.selectPaymentType("Услуги связи");
+        String[] servicePlaceholders = mainPage.getPlaceholderTexts1();
+        String[] expectedServicePlaceholders = new String[]{
+                "Номер телефона",
+                "Сумма",
+                "E-mail для отправки чека"
+        };
+        assertArrayEquals("Плейсхолдеры не совпадают", expectedServicePlaceholders, servicePlaceholders);
+    }
 
-        WebElement continueButton = driver.findElement(By.xpath("//*[@id=\"pay-connection\"]/button"));
-        continueButton.click();
+    @Test  //Проверка плейсхолдеров для варианта "Домашний интернет"
+    public void testPlaceholderTexts2() {
+        mainPage.selectPaymentType("Домашний интернет");
+        String[] servicePlaceholders = mainPage.getPlaceholderTexts2();
+        String[] expectedServicePlaceholders = new String[]{
+                "Номер абонента",
+                "Сумма",
+                "E-mail для отправки чека"
+        };
 
-        WebElement iframe = wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("iframe.bepaid-iframe")));
-        driver.switchTo().frame(iframe);
-        WebElement expectedElement = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//div[@class=\"pay-description__text\"]")));
+        assertArrayEquals("Плейсхолдеры не совпадают", expectedServicePlaceholders, servicePlaceholders);
+    }
 
+    @Test  //Проверка плейсхолдеров для варианта "Рассрочка"
+    public void testPlaceholderTexts3() {
+        mainPage.selectPaymentType("Рассрочка");
+        String[] servicePlaceholders = mainPage.getPlaceholderTexts3();
+        String[] expectedServicePlaceholders = new String[]{
+                "Номер счета на 44",
+                "Сумма",
+                "E-mail для отправки чека"
+        };
+        assertArrayEquals("Плейсхолдеры не совпадают", expectedServicePlaceholders, servicePlaceholders);
+    }
+
+    @Test  //Проверка плейсхолдеров для варианта "Задолженность"
+    public void testPlaceholderTexts4() {
+        mainPage.selectPaymentType("Задолженность");
+        String[] servicePlaceholders = mainPage.getPlaceholderTexts4();
+        String[] expectedServicePlaceholders = new String[]{
+                "Номер счета на 2073",
+                "Сумма",
+                "E-mail для отправки чека"
+        };
+        assertArrayEquals("Плейсхолдеры не совпадают", expectedServicePlaceholders, servicePlaceholders);
     }
 
     @After
