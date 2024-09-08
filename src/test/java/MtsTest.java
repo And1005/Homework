@@ -1,8 +1,10 @@
+import io.qameta.allure.*;
 import org.example.MainPage;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+//import org.junit.jupiter.api.DisplayName;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -11,7 +13,8 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 import java.time.Duration;
 import static org.junit.Assert.assertArrayEquals;
 
-
+@Epic("MTS test")
+@Feature("UI tests")
 public class MtsTest {
     private WebDriver driver;
     private WebDriverWait wait;
@@ -29,24 +32,34 @@ public class MtsTest {
     }
 
 
-    @Test  //Проверка наименования блока "Онлайн пополнение без комиссии"
+    @Test
+    @Story("Онлайн пополнение без комиссии")
+    @Description("Проверка наименования блока \"Онлайн пополнение без комиссии\"")
     public void testOnlineRefillBlock() {
         Assert.assertNotNull("Блок не найден", mainPage.getRefillBlockName());
     }
 
-    @Test  //Проверка ссылки "Подробнее о сервисе"
+    @Test
+    @Story("Онлайн пополнение без комиссии")
+    @Description("Проверка логотипов платёжных систем")
+    public void testLogo() {
+        Assert.assertTrue("Логотипы не найдены", mainPage.areLogosPresent());
+    }
+
+    @Test
+    @Story("Онлайн пополнение без комиссии")
+    @Description("Проверка ссылки \"Подробнее о сервисе\"")
     public void testMoreAboutServiceLink() {
         mainPage.clickMoreAboutServiceLink();
         WebElement serviceNameElement = driver.findElement(By.xpath("//span[@itemprop='name' and text()='Порядок оплаты и безопасность интернет платежей']"));
         Assert.assertNotNull("Страница не загрузилась", serviceNameElement);
     }
 
-    @Test  //Проверка логотипов платёжных систем
-    public void testLogo() {
-        Assert.assertTrue("Логотипы не найдены", mainPage.areLogosPresent());
-    }
 
-    @Test  //Проверка варианта "Услуги связи" + проверка суммы, номера телефона, надписей и логотипов платёжных систем
+
+    @Test
+    @Story("Онлайн пополнение без комиссии")
+    @Description("Проверка варианта \"Услуги связи\": проверка суммы, номера телефона, надписей и логотипов платёжных систем")
     public void testContinueButton() {
         mainPage.enterPhoneNumber("297777777");
         mainPage.enterSum("80");
@@ -66,7 +79,9 @@ public class MtsTest {
         Assert.assertTrue("Логотипы не найдены", mainPage.areLogosPresentOnPaymentTab());
     }
 
-    @Test //Проверка плейсхолдеров для варианта "Услуги связи"
+    @Test
+    @Story("Онлайн пополнение без комиссии")
+    @Description("Проверка плейсхолдеров для варианта \"Услуги связи\"")
     public void testPlaceholderTexts1() {
         mainPage.selectPaymentType("Услуги связи");
         String[] servicePlaceholders = mainPage.getPlaceholderTexts1();
@@ -78,7 +93,9 @@ public class MtsTest {
         assertArrayEquals("Плейсхолдеры не совпадают", expectedServicePlaceholders, servicePlaceholders);
     }
 
-    @Test  //Проверка плейсхолдеров для варианта "Домашний интернет"
+    @Test
+    @Story("Онлайн пополнение без комиссии")
+    @Description("Проверка плейсхолдеров для варианта \"Домашний интернет\"")
     public void testPlaceholderTexts2() {
         mainPage.selectPaymentType("Домашний интернет");
         String[] servicePlaceholders = mainPage.getPlaceholderTexts2();
@@ -91,7 +108,9 @@ public class MtsTest {
         assertArrayEquals("Плейсхолдеры не совпадают", expectedServicePlaceholders, servicePlaceholders);
     }
 
-    @Test  //Проверка плейсхолдеров для варианта "Рассрочка"
+    @Test
+    @Story("Онлайн пополнение без комиссии")
+    @Description("Проверка плейсхолдеров для варианта \"Рассрочка\"")
     public void testPlaceholderTexts3() {
         mainPage.selectPaymentType("Рассрочка");
         String[] servicePlaceholders = mainPage.getPlaceholderTexts3();
@@ -103,7 +122,9 @@ public class MtsTest {
         assertArrayEquals("Плейсхолдеры не совпадают", expectedServicePlaceholders, servicePlaceholders);
     }
 
-    @Test  //Проверка плейсхолдеров для варианта "Задолженность"
+    @Test
+    @Story("Онлайн пополнение без комиссии")
+    @Description("Проверка плейсхолдеров для варианта \"Задолженность\"")
     public void testPlaceholderTexts4() {
         mainPage.selectPaymentType("Задолженность");
         String[] servicePlaceholders = mainPage.getPlaceholderTexts4();
