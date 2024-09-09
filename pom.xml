@@ -18,6 +18,8 @@
         <aspectj.version>1.9.21</aspectj.version>
         <allure-maven.version>2.11.2</allure-maven.version>
         <report.version>2.29.0</report.version>
+        <report.results.directory>target/allure-results</report.results.directory>
+
     </properties>
 
     <dependencyManagement>
